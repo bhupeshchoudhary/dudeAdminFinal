@@ -221,10 +221,13 @@ export function ProductsTab() {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD'
-    }).format(price);
+      currency: 'INR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+      currencyDisplay: 'code'
+    }).format(price).replace('INR', 'Rs.');
   };
 
   // Edit Product Dialog Component

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +13,9 @@ import ProdectOfTheDay from '../categoriTab/ProductOfTheDay'
 import Flavour from "../categoriTab/Flavour"
 import Orders from '../categoriTab/Orders'
 import DashboardOverview from '../../dashboard/DashboardOverview'
+import { fetchProducts } from '@/lib/product/ProductFun'
+import { fetchCategories } from '@/lib/cateogry/CategoryFun'
+import { fetchUserOrders, getOrderStats } from '@/lib/product/HandleOrder'
 import { 
   LayoutDashboard, 
   Package, 
@@ -37,6 +40,45 @@ interface TabItem {
 
 export default function AdminHome() {
   const [activeTab, setActiveTab] = useState("dashboard")
+  const [stats, setStats] = useState({
+    products: 0,
+    categories: 0,
+    orders: {
+      total: 0,
+      pending: 0
+    },
+    users: 0
+  })
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch products count
+        const products = await fetchProducts()
+        
+        // Fetch categories count
+        const categories = await fetchCategories()
+        
+        // Fetch order stats
+        const orderStats = await getOrderStats()
+        
+        // Update stats state
+        setStats({
+          products: products.length,
+          categories: categories.length,
+          orders: {
+            total: orderStats.total,
+            pending: orderStats.pending
+          },
+          users: orderStats.businessOrders // Using business orders as a proxy for users
+        })
+      } catch (error) {
+        console.error('Error fetching stats:', error)
+      }
+    }
+
+    fetchStats()
+  }, [])
 
   const tabs: TabItem[] = [
     {
@@ -48,25 +90,25 @@ export default function AdminHome() {
       value: "products",
       label: "Products",
       icon: <Package className="w-4 h-4" />,
-      badge: "156"
+      badge: stats.products
     },
     {
       value: "categories",
       label: "Categories",
       icon: <FolderOpen className="w-4 h-4" />,
-      badge: "12"
+      badge: stats.categories
     },
     {
       value: "orders",
       label: "Orders",
       icon: <ShoppingCart className="w-4 h-4" />,
-      badge: "23"
+      badge: stats.orders.total
     },
     {
       value: "users",
       label: "Users",
       icon: <Users className="w-4 h-4" />,
-      badge: "89"
+      badge: stats.users
     },
     {
       value: "images",
@@ -145,7 +187,7 @@ export default function AdminHome() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-semibold">Products Management</h2>
-                  <Badge variant="outline">156 Total</Badge>
+                  <Badge variant="outline">{stats.products} Total</Badge>
                 </div>
                 <ProductsTab />
               </div>
@@ -155,7 +197,7 @@ export default function AdminHome() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-semibold">Categories Management</h2>
-                  <Badge variant="outline">12 Total</Badge>
+                  <Badge variant="outline">{stats.categories} Total</Badge>
                 </div>
                 <CategoriesTab />
               </div>
@@ -167,9 +209,9 @@ export default function AdminHome() {
                   <h2 className="text-2xl font-semibold">Orders Management</h2>
                   <div className="flex gap-2">
                     <Badge variant="outline" className="bg-orange-50 text-orange-700">
-                      5 Pending
+                      {stats.orders.pending} Pending
                     </Badge>
-                    <Badge variant="outline">23 Total</Badge>
+                    <Badge variant="outline">{stats.orders.total} Total</Badge>
                   </div>
                 </div>
                 <Orders />
@@ -180,7 +222,7 @@ export default function AdminHome() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-semibold">Users Management</h2>
-                  <Badge variant="outline">89 Total</Badge>
+                  <Badge variant="outline">{stats.users} Total</Badge>
                 </div>
                 <UsersTab />
               </div>

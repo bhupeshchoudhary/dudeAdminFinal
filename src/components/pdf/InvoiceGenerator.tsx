@@ -119,6 +119,16 @@ interface InvoiceDocumentProps {
   order: Order;
 }
 
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    currencyDisplay: 'code'
+  }).format(price).replace('INR', 'Rs.');
+};
+
 const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ order }) => (
   <Document>
     <Page size="A4" style={styles.page}>
@@ -174,10 +184,10 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ order }) => (
               <Text style={styles.tableCell}>{item.quantity}</Text>
             </View>
             <View style={styles.tableCol}>
-              <Text style={styles.tableCell}>Rs.{item.price}</Text>
+              <Text style={styles.tableCell}>{formatPrice(item.price)}</Text>
             </View>
             <View style={styles.tableCol}>
-              <Text style={styles.tableCell}>Rs.{(item.quantity * item.price).toFixed(2)}</Text>
+              <Text style={styles.tableCell}>{formatPrice(item.quantity * item.price)}</Text>
             </View>
           </View>
         ))}
@@ -188,30 +198,30 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ order }) => (
         <View style={styles.totalRow}>
           <Text style={styles.totalLabel}>Subtotal:</Text>
           <Text style={styles.totalValue}>
-            Rs.{order.items.reduce((sum, item) => sum + (item.quantity * item.price), 0).toFixed(2)}
+            {formatPrice(order.items.reduce((sum, item) => sum + (item.quantity * item.price), 0))}
           </Text>
         </View>
         {order.discount && order.discount > 0 && (
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Discount:</Text>
-            <Text style={styles.totalValue}>-Rs.{order.discount.toFixed(2)}</Text>
+            <Text style={styles.totalValue}>-{formatPrice(order.discount)}</Text>
           </View>
         )}
         {order.tax && order.tax > 0 && (
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Tax:</Text>
-            <Text style={styles.totalValue}>Rs.{order.tax.toFixed(2)}</Text>
+            <Text style={styles.totalValue}>{formatPrice(order.tax)}</Text>
           </View>
         )}
         {order.shippingCost && order.shippingCost > 0 && (
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Shipping:</Text>
-            <Text style={styles.totalValue}>Rs.{order.shippingCost.toFixed(2)}</Text>
+            <Text style={styles.totalValue}>{formatPrice(order.shippingCost)}</Text>
           </View>
         )}
         <View style={styles.totalRow}>
           <Text style={styles.totalLabel}>Total:</Text>
-          <Text style={styles.totalValue}>Rs.{order.totalAmount.toFixed(2)}</Text>
+          <Text style={styles.totalValue}>{formatPrice(order.totalAmount)}</Text>
         </View>
       </View>
 

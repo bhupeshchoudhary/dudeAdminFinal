@@ -43,6 +43,16 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    currencyDisplay: 'code'
+  }).format(price).replace('INR', 'Rs.');
+};
+
 const Orders = () => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
@@ -501,7 +511,7 @@ const Orders = () => {
                             <div className="flex justify-between items-center border-t pt-2">
                                 <span className="text-sm font-medium">Total Amount:</span>
                                 <span className="text-lg font-bold text-green-600">
-                                    Rs.{order.totalAmount.toFixed(2)}
+                                    {formatPrice(order.totalAmount)}
                                 </span>
                             </div>
                             
@@ -578,11 +588,11 @@ const Orders = () => {
                                             Product ID: {item.productId.slice(-8)}
                                         </p>
                                         <p className="text-xs text-gray-500">
-                                            Qty: {item.quantity} × Rs.{item.price}
+                                            Qty: {item.quantity} × {formatPrice(item.price)}
                                         </p>
                                     </div>
                                     <div className="text-sm font-medium">
-                                        Rs.{(item.quantity * item.price).toFixed(2)}
+                                        {formatPrice(item.quantity * item.price)}
                                     </div>
                                 </div>
                             ))}
@@ -812,7 +822,7 @@ const Orders = () => {
                                     <div className="space-y-3">
                                         <div className="flex justify-between">
                                             <span>Subtotal:</span>
-                                            <span>Rs.{selectedOrder.items.reduce((sum, item) => sum + (item.quantity * item.price), 0).toFixed(2)}</span>
+                                            <span>{formatPrice(selectedOrder.items.reduce((sum, item) => sum + (item.quantity * item.price), 0))}</span>
                                         </div>
                                         {selectedOrder.discount && selectedOrder.discount > 0 && (
                                             <div className="flex justify-between text-green-600">
@@ -835,7 +845,7 @@ const Orders = () => {
                                         <div className="border-t pt-3">
                                             <div className="flex justify-between text-lg font-bold">
                                                 <span>Total:</span>
-                                                <span>Rs.{selectedOrder.totalAmount.toFixed(2)}</span>
+                                                <span>{formatPrice(selectedOrder.totalAmount)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -861,8 +871,8 @@ const Orders = () => {
                                                 <p className="text-sm text-gray-500">Product ID: {item.productId}</p>
                                                 <div className="flex items-center gap-4 mt-2">
                                                     <span className="text-sm">Qty: {item.quantity}</span>
-                                                    <span className="text-sm">Price: Rs.{item.price}</span>
-                                                    <span className="font-medium">Total: Rs.{(item.quantity * item.price).toFixed(2)}</span>
+                                                    <span className="text-sm">Price: {formatPrice(item.price)}</span>
+                                                    <span className="font-medium">Total: {formatPrice(item.quantity * item.price)}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -900,7 +910,7 @@ const Orders = () => {
                                         <DollarSign className="w-5 h-5 text-green-600" />
                                         <div>
                                             <p className="font-medium">Payment Confirmed</p>
-                                            <p className="text-sm text-gray-500">Amount: Rs.{selectedOrder.totalAmount.toFixed(2)}</p>
+                                            <p className="text-sm text-gray-500">Amount: {formatPrice(selectedOrder.totalAmount)}</p>
                                         </div>
                                     </div>
                                 )}
@@ -1013,7 +1023,7 @@ const Orders = () => {
                             <DollarSign className="w-5 h-5 text-green-600" />
                             <div>
                                 <p className="text-2xl font-bold">
-                                    Rs.{orders.reduce((sum, order) => sum + order.totalAmount, 0).toFixed(2)}
+                                    {formatPrice(orders.reduce((sum, order) => sum + order.totalAmount, 0))}
                                 </p>
                                 <p className="text-sm text-gray-600">Total Revenue</p>
                             </div>
