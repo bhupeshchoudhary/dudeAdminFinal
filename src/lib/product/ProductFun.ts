@@ -21,9 +21,9 @@ export async function fetchProducts(): Promise<Product[]> {
       productId: doc.productId,
       name: doc.name,
       description: doc.description,
-      price: doc.price / 100,
-      mrp: doc.mrp ? doc.mrp / 100 : null,
-      discount: doc.discount ? doc.discount / 100 : null,
+      price: doc.price / 100, // Convert from cents to main currency unit
+      mrp: doc.mrp ? doc.mrp / 100 : null, // Convert from cents to main currency unit
+      discount: doc.discount, // Keep discount as percentage (don't divide by 100)
       imageUrl: doc.imageUrl,
       stock: doc.stock,
       unit: doc.unit,
@@ -50,9 +50,9 @@ export async function addProduct(productData: any) {
         productId: productData.productId,
         name: productData.name,
         description: productData.description || '',
-        price: Math.round(productData.price * 100),
-        mrp: productData.mrp ? Math.round(productData.mrp * 100) : null,
-        discount: productData.discount ? Math.round(productData.discount * 100) : null,
+        price: Math.round(productData.price * 100), // Store in cents
+        mrp: productData.mrp ? Math.round(productData.mrp * 100) : null, // Store in cents
+        discount: productData.discount || null, // Store as percentage (don't multiply by 100)
         imageUrl: productData.imageUrl || '',
         stock: productData.stock || 0,
         unit: productData.unit,
@@ -65,9 +65,9 @@ export async function addProduct(productData: any) {
     
     return {
       ...response,
-      price: response.price / 100,
-      mrp: response.mrp ? response.mrp / 100 : null,
-      discount: response.discount ? response.discount / 100 : null,
+      price: response.price / 100, // Convert back to main currency unit for frontend
+      mrp: response.mrp ? response.mrp / 100 : null, // Convert back to main currency unit for frontend
+      discount: response.discount, // Keep as percentage
     };
   } catch (error) {
     console.error('Error adding product:', error);
@@ -84,9 +84,9 @@ export const updateProduct = async (documentId: string, productData: any): Promi
     if (productData.name !== undefined) updateData.name = productData.name;
     if (productData.productId !== undefined) updateData.productId = productData.productId;
     if (productData.description !== undefined) updateData.description = productData.description;
-    if (productData.price !== undefined) updateData.price = Math.round(productData.price * 100);
-    if (productData.mrp !== undefined) updateData.mrp = productData.mrp ? Math.round(productData.mrp * 100) : null;
-    if (productData.discount !== undefined) updateData.discount = productData.discount ? Math.round(productData.discount * 100) : null;
+    if (productData.price !== undefined) updateData.price = Math.round(productData.price * 100); // Store in cents
+    if (productData.mrp !== undefined) updateData.mrp = productData.mrp ? Math.round(productData.mrp * 100) : null; // Store in cents
+    if (productData.discount !== undefined) updateData.discount = productData.discount; // Store as percentage (don't multiply by 100)
     if (productData.imageUrl !== undefined) updateData.imageUrl = productData.imageUrl;
     if (productData.stock !== undefined) updateData.stock = productData.stock;
     if (productData.unit !== undefined) updateData.unit = productData.unit;
@@ -105,6 +105,11 @@ export const updateProduct = async (documentId: string, productData: any): Promi
     return false;
   }
 };
+
+
+
+
+
 
 export async function deleteProduct(documentId: string): Promise<boolean> {
   try {

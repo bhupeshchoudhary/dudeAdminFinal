@@ -119,7 +119,7 @@ export function ProductsTab() {
     try {
       setIsCategoriesLoading(true);
       const data = await fetchCategories();
-      setCategories(data || []);
+      setCategories((data || []) as unknown as Category[]);
       if (data?.length > 0) {
         toast.success("Categories loaded successfully!");
       }
@@ -156,11 +156,12 @@ export function ProductsTab() {
         productId: newProduct.productId.trim(),
         description: newProduct.description.trim(),
         imageUrl: newProduct.imageUrl.trim(),
+        discount: newProduct.discount ? Math.round(newProduct.discount) : null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
 
-      setProducts(prev => [...prev, createdProduct]);
+      setProducts(prev => [...prev, createdProduct as Product]);
       
       // Reset form
       setNewProduct({
@@ -207,7 +208,7 @@ export function ProductsTab() {
   };
 
   const handleImageError = (productId: string) => {
-    setImageLoadErrors(prev => new Set([...prev, productId]));
+    setImageLoadErrors(prev => new Set(Array.from(prev).concat(productId)));
   };
 
   const formatDate = (dateString: string) => {
@@ -289,6 +290,7 @@ export function ProductsTab() {
           productId: editData.productId.trim(),
           description: editData.description.trim(),
           imageUrl: editData.imageUrl.trim(),
+          discount: editData.discount ? Math.round(editData.discount) : null,
           updatedAt: new Date().toISOString(),
         });
 
