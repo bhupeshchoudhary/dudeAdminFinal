@@ -12,13 +12,7 @@ import { addCategory, fetchCategories, deleteCategory, updateCategory } from '@/
 import { Category } from "@/types/CategoryTypes"
 import toast, { Toaster } from 'react-hot-toast'
 import { Skeleton } from "@/components/ui/skeleton"
-import { Trash2, Plus, Image as ImageIcon, Calendar, RefreshCw, Edit, Save, X, Check } from "lucide-react"
-
-interface EditingCategory {
-  categoryId: string
-  name: string
-  imageUrl: string
-}
+import { Trash2, Plus, Image as ImageIcon, Calendar, RefreshCw, Edit, Save } from "lucide-react"
 
 export function CategoriesTab() {
   const [categories, setCategories] = useState<Category[]>([])
@@ -27,13 +21,10 @@ export function CategoriesTab() {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isAdding, setIsAdding] = useState<boolean>(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [editingCategory, setEditingCategory] = useState<EditingCategory | null>(null)
-  const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<string>>(new Set())
 
   // Form validation
   const isFormValid = categoryName.trim() && categoryImageUrl.trim()
-  const isEditFormValid = editingCategory?.name.trim() && editingCategory?.imageUrl.trim()
   
   const isValidUrl = (url: string) => {
     try {
@@ -74,65 +65,6 @@ export function CategoriesTab() {
     }
   }
 
-  const handleUpdateCategory = async () => {
-    if (!editingCategory || !isEditFormValid) {
-      toast.error('Please fill in all fields')
-      return
-    }
-
-    if (!isValidUrl(editingCategory.imageUrl)) {
-      toast.error('Please enter a valid image URL')
-      return
-    }
-
-    setUpdatingId(editingCategory.categoryId)
-    try {
-      const success = await updateCategory(
-        editingCategory.$id,
-        editingCategory.name.trim(), 
-        editingCategory.imageUrl.trim()
-      )
-      
-      if (success) {
-        const updatedAt = new Date().toISOString();
-        setCategories(prevCategories =>
-          prevCategories.map(cat =>
-            cat.$id === editingCategory.$id
-              ? { ...cat, name: editingCategory.name.trim(), imageUrl: editingCategory.imageUrl.trim(), updatedAt }
-              : cat
-          )
-        )
-        toast.success('Category updated successfully')
-        setEditingCategory(null)
-        // Remove from image error set if it was there
-        setImageLoadErrors(prev => {
-          const newSet = new Set(prev)
-          newSet.delete(editingCategory.categoryId)
-          return newSet
-        })
-      } else {
-        toast.error('Failed to update category')
-      }
-    } catch (error) {
-      console.error('Error updating category:', error)
-      toast.error('An error occurred while updating the category')
-    } finally {
-      setUpdatingId(null)
-    }
-  }
-
-  const startEditing = (category: Category) => {
-    setEditingCategory({
-      categoryId: category.categoryId,
-      name: category.name,
-      imageUrl: category.imageUrl || ""
-    })
-  }
-
-  const cancelEditing = () => {
-    setEditingCategory(null)
-  }
-
   const getCategoryData = useCallback(async () => {
     setIsLoading(true)
     try {
@@ -161,10 +93,6 @@ export function CategoriesTab() {
       if (success) {
         setCategories(categories.filter(cat => cat.categoryId !== categoryId))
         toast.success('Category deleted successfully')
-        // Cancel editing if this category was being edited
-        if (editingCategory?.categoryId === categoryId) {
-          setEditingCategory(null)
-        }
       } else {
         toast.error('Failed to delete category')
       }
@@ -235,6 +163,7 @@ export function CategoriesTab() {
     const [open, setOpen] = useState(false)
     const [localName, setLocalName] = useState(category.name)
     const [localImageUrl, setLocalImageUrl] = useState(category.imageUrl || "")
+    const [isUpdating, setIsUpdating] = useState(false)
 
     const handleSave = async () => {
       if (!localName.trim() || !localImageUrl.trim()) {
@@ -247,7 +176,7 @@ export function CategoriesTab() {
         return
       }
 
-      setUpdatingId(category.categoryId)
+      setIsUpdating(true)
       try {
         const success = await updateCategory(
           category.$id,
@@ -279,7 +208,7 @@ export function CategoriesTab() {
         console.error('Error updating category:', error)
         toast.error('An error occurred while updating the category')
       } finally {
-        setUpdatingId(null)
+        setIsUpdating(false)
       }
     }
 
@@ -289,13 +218,13 @@ export function CategoriesTab() {
           <Button
             variant="outline"
             size="sm"
-            disabled={updatingId === category.categoryId}
+            disabled={isUpdating}
             onClick={() => {
               setLocalName(category.name)
               setLocalImageUrl(category.imageUrl || "")
             }}
           >
-            {updatingId === category.categoryId ? (
+            {isUpdating ? (
               <RefreshCw className="h-4 w-4 animate-spin" />
             ) : (
               <Edit className="h-4 w-4" />
@@ -350,9 +279,9 @@ export function CategoriesTab() {
             </Button>
             <Button
               onClick={handleSave}
-              disabled={!localName.trim() || !localImageUrl.trim() || updatingId === category.categoryId}
+              disabled={!localName.trim() || !localImageUrl.trim() || isUpdating}
             >
-              {updatingId === category.categoryId ? (
+              {isUpdating ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin mr-2" />
                   Saving...
